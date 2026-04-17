@@ -6,9 +6,9 @@ import { injectShadowRootAndRender } from './components/injectShadowRoot';
 console.log('MuleFlow Diff Visualizer: Content script active. TextScanner Mode.');
 console.log('MuleFlow: Note - any ERR_BLOCKED_BY_CLIENT errors for collector.github.com are from your AdBlocker/Browser, NOT this extension.');
 
-function debounce(func: Function, wait: number) {
+function debounce<T extends (...args: any[]) => void>(func: T, wait: number) {
   let timeout: ReturnType<typeof setTimeout>;
-  return function executedFunction(...args: any[]) {
+  return function executedFunction(...args: Parameters<T>) {
     const later = () => {
       clearTimeout(timeout);
       func(...args);
