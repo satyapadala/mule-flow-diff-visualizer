@@ -69,14 +69,27 @@ const DIFF_STRIPE: Record<string, { color: string; label: string; opacity?: numb
 
 // ── Hint rendering ────────────────────────────────────────────────────────────
 function HintRow({ hint, isDark }: { hint: ContextHint; isDark: boolean }) {
-  const textColor = isDark ? 'rgba(255,255,255,0.65)' : '#57606a';
-  const keyColor  = isDark ? 'rgba(255,255,255,0.4)'  : '#8c959f';
+  const textColor = isDark ? 'rgba(255,255,255,0.65)' : '#444d56';
+  const keyColor  = isDark ? 'rgba(255,255,255,0.42)' : '#6a737d';
+  const isMap = hint.key === 'map';
+
+  if (isMap && hint.value.includes('→')) {
+    const [target, source] = hint.value.split('→').map(s => s.trim());
+    return (
+      <div style={{ display: 'flex', gap: 4, alignItems: 'flex-start', marginTop: 3, lineHeight: 1.25, background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.02)', padding: '1px 4px', borderRadius: 3 }}>
+        <span style={{ fontSize: 9, fontWeight: 700, color: isDark ? '#79c0ff' : '#0550ae', fontFamily: 'monospace' }}>{target}</span>
+        <span style={{ fontSize: 9, color: isDark ? 'rgba(255,255,255,0.3)' : '#8c959f', fontWeight: 600 }}>:</span>
+        <span style={{ fontSize: 9, color: textColor, wordBreak: 'break-all', fontFamily: 'monospace', flex: 1 }}>{source}</span>
+      </div>
+    );
+  }
+
   return (
     <div style={{ display: 'flex', gap: 4, alignItems: 'flex-start', marginTop: 2, lineHeight: 1.3 }}>
       <span style={{ fontSize: 9, fontWeight: 700, color: keyColor, textTransform: 'uppercase', letterSpacing: '0.4px', flexShrink: 0, paddingTop: 1 }}>
         {hint.key}
       </span>
-      <span style={{ fontSize: 10, color: textColor, wordBreak: 'break-all', fontFamily: hint.key === 'sql' || hint.key === 'when' || hint.key === 'msg' ? 'monospace' : 'inherit' }}>
+      <span style={{ fontSize: 10, color: textColor, wordBreak: 'break-all', fontFamily: hint.key === 'sql' || hint.key === 'when' || hint.key === 'msg' || hint.key === 'output' ? 'monospace' : 'inherit' }}>
         {hint.value}
       </span>
     </div>

@@ -137,6 +137,52 @@ function extractContextHints(tag: string, attrs: Record<string, string>, childre
         add('transactionalAction', a['@_transactionalAction']);
     }
 
+    // ── DataWeave (Transform Message) ─────────────────────────────────────────
+    if (ns === 'ee' && local === 'transform') {
+        // Collect mapping snippets from all sub-elements (set-payload, set-variable)
+        const dwScripts: string[] = [];
+
+        function findDW(arr: any[]) {
+            for (const item of arr) {
+                for (const tag of Object.keys(item)) {
+                    if (tag === ':@' || tag === '#text') continue;
+                    if (tag.includes('set-payload') || tag.includes('set-variable')) {
+                        const content = item[tag];
+                        const text = Array.isArray(content)
+                            ? (content.find((c: any) => c['#text'])?.['#text'] || '')
+                            : (typeof content === 'string' ? content : '');
+                        if (text) dwScripts.push(text);
+                    } else if (Array.isArray(item[tag])) {
+                        findDW(item[tag]);
+                    }
+                }
+            }
+        }
+        findDW(children);
+
+        for (const script of dwScripts) {
+            // Extract mappings after '---'
+            const body = script.split('---').pop() || '';
+            const outputTypeMatch = script.match(/output\s+([\w/]+)/);
+            if (outputTypeMatch) add('output', outputTypeMatch[1]);
+
+            // Very sophisticated regex to find top-level 'key : value' mappings
+            // Looks for "word: value" where value is something reasonably short
+            const mappingRegex = /(['"]?[\w-]+['"]?)\s*:\s*([^,}\n]+)/g;
+            let match;
+            let count = 0;
+            while ((match = mappingRegex.exec(body)) !== null && count < 5) {
+                const key = match[1].replace(/['"]/g, '');
+                const val = match[2].trim();
+                if (key && val && val.length < 50) {
+                    add(`map`, `${key} → ${val}`);
+                    count++;
+                }
+            }
+            if (count >= 5) add('map', '...');
+        }
+    }
+
     // ── Messaging ─────────────────────────────────────────────────────────────
     if (ns === 'amqp' || ns === 'jms') {
         add('queue', a['@_queueName'] || a['@_exchangeName'] || a['@_destination']);
