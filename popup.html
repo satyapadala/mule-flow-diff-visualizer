@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MuleFlow Visualizer</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      width: 320px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #0d1117;
+      color: #e6edf3;
+    }
+    .header {
+      background: linear-gradient(135deg, #1f6feb 0%, #388bfd 100%);
+      padding: 16px 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .logo { font-size: 22px; }
+    .header-text h1 { font-size: 14px; font-weight: 700; color: #fff; }
+    .header-text p { font-size: 11px; color: rgba(255,255,255,0.75); margin-top: 2px; }
+    .content { padding: 16px; }
+    .status-card {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      padding: 12px 14px;
+      margin-bottom: 12px;
+    }
+    .status-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #7d8590;
+      margin-bottom: 6px;
+    }
+    .status-value {
+      font-size: 12px;
+      color: #e6edf3;
+      word-break: break-all;
+      line-height: 1.4;
+    }
+    .status-value.muted { color: #7d8590; font-style: italic; }
+    .btn {
+      width: 100%;
+      padding: 10px 16px;
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    .btn:hover { opacity: 0.85; }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-primary {
+      background: linear-gradient(135deg, #238636, #2ea043);
+      color: #fff;
+    }
+    .btn-secondary {
+      background: #21262d;
+      color: #e6edf3;
+      border: 1px solid #30363d;
+      margin-top: 8px;
+    }
+    .pills {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+    .pill {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-size: 10px;
+      font-weight: 600;
+    }
+    .pill-green { background: #1a7f3715; color: #3fb950; border: 1px solid #238636; }
+    .pill-blue  { background: #1f6feb15;  color: #79c0ff; border: 1px solid #1f6feb; }
+    .pill-yellow { background: #d4a72c15; color: #e3b341; border: 1px solid #d4a72c; }
+    .pill-red   { background: #da363415; color: #ff7b72; border: 1px solid #cf222e; }
+    .divider { border: none; border-top: 1px solid #21262d; margin: 12px 0; }
+    .hint { font-size: 11px; color: #7d8590; line-height: 1.5; }
+    .hint a { color: #79c0ff; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo">🌊</div>
+    <div class="header-text">
+      <h1>MuleFlow Visualizer</h1>
+      <p>Visual flow diagrams for MuleSoft XML</p>
+    </div>
+  </div>
+  <div class="content">
+    <div class="status-card">
+      <div class="status-label">Current Page</div>
+      <div class="status-value" id="page-info">Detecting...</div>
+    </div>
+
+    <button class="btn btn-primary" id="btn-visualize" disabled>
+      👁 Visualize Flow
+    </button>
+    <button class="btn btn-secondary" id="btn-open-docs" style="display:none">
+      📄 Open Raw File
+    </button>
+
+    <hr class="divider" />
+
+    <div class="pills">
+      <span class="pill pill-green">+ Added</span>
+      <span class="pill pill-yellow">~ Modified</span>
+      <span class="pill pill-red">− Removed</span>
+      <span class="pill pill-blue">· Unchanged</span>
+    </div>
+
+    <hr class="divider" />
+    <p class="hint">
+      Works on GitHub PR diffs <em>and</em> direct file views.<br/>
+      Supports <strong>github.com</strong> and GitHub Enterprise.
+    </p>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
