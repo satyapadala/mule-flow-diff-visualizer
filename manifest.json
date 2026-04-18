@@ -41,5 +41,6 @@
   "action": {
     "default_title": "MuleFlow Diff Visualizer",
     "default_popup": "popup.html"
-  }
+  },
+  "options_page": "options.html"
 }

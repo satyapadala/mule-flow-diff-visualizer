@@ -11,6 +11,7 @@ export default defineConfig({
       targets: [
         { src: 'manifest.json', dest: '.' },
         { src: 'popup.html', dest: '.' },
+        { src: 'options.html', dest: '.' },
       ],
     }),
   ],
@@ -20,10 +21,11 @@ export default defineConfig({
         main: resolve(__dirname, 'index.html'),
         background: resolve(__dirname, 'src/background.ts'),
         popup: resolve(__dirname, 'src/popup.ts'),
+        options: resolve(__dirname, 'src/options.ts'),
       },
       output: {
         entryFileNames: (chunkInfo) => {
-          return ['background', 'popup'].includes(chunkInfo.name)
+          return ['background', 'popup', 'options'].includes(chunkInfo.name)
             ? '[name].js'
             : 'assets/[name]-[hash].js';
         },

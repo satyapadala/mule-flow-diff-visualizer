@@ -12,7 +12,9 @@ export function injectShadowRootAndRender(
   parentElement: HTMLElement, 
   filePath: string,
   rawNodes: any[], 
-  rawEdges: any[]
+  rawEdges: any[],
+  baseXml = '',
+  headXml = ''
 ) {
     let container = document.getElementById(`muleflow-canvas-${filePath.replace(/[^a-zA-Z0-9]/g, '-')}`);
     
@@ -58,12 +60,12 @@ export function injectShadowRootAndRender(
 
         const root = createRoot(reactRootContainer);
         attachedRoots.set(container.id, root);
-        root.render(<FlowGraph rawNodes={rawNodes} rawEdges={rawEdges} />);
+        root.render(<FlowGraph rawNodes={rawNodes} rawEdges={rawEdges} filePath={filePath} baseXml={baseXml} headXml={headXml} />);
     } else {
         // If it exists, just trigger a re-render with new data!
         const root = attachedRoots.get(container.id);
         if (root) {
-             root.render(<FlowGraph rawNodes={rawNodes} rawEdges={rawEdges} />);
+             root.render(<FlowGraph rawNodes={rawNodes} rawEdges={rawEdges} filePath={filePath} baseXml={baseXml} headXml={headXml} />);
         }
     }
 }

@@ -116,7 +116,7 @@ function injectVisualToggle() {
                   
                   const fileContainerElement = toggleButton.closest('[id^="diff-"], .js-file, [data-details-container-group="file"]') as HTMLElement;
                   if (fileContainerElement) {
-                      injectShadowRootAndRender(fileContainerElement, pathText, nodes, edges);
+                      injectShadowRootAndRender(fileContainerElement, pathText, nodes, edges, baseXml, headXml);
                   } else {
                       alert('Could not locate file container for graph injection!');
                   }

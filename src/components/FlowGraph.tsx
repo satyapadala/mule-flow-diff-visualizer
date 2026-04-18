@@ -4,6 +4,8 @@ import dagre from 'dagre';
 import { GraphNode, GraphEdge } from '../parser';
 import { FlowNode } from './FlowNode';
 import { buildDisplayGraph, DisplayNode } from '../utils/buildDisplayGraph';
+import { buildAiDiffSummary } from '../utils/buildAiDiffSummary';
+import { AiChatPanel } from './AiChatPanel';
 
 const nodeTypes = { flowNode: FlowNode };
 
@@ -79,12 +81,16 @@ function countSteps(subFlowName: string, rawNodes: GraphNode[]): number {
 }
 
 // ── Main FlowGraph Component ──────────────────────────────────────────────────
-export function FlowGraph({ rawNodes, rawEdges, mode = 'diff' }: {
+export function FlowGraph({ rawNodes, rawEdges, mode = 'diff', filePath = '', baseXml = '', headXml = '' }: {
     rawNodes: GraphNode[];
     rawEdges: GraphEdge[];
     mode?: 'diff' | 'view';
+    filePath?: string;
+    baseXml?: string;
+    headXml?: string;
 }) {
     const [expandedFlowRefs, setExpandedFlowRefs] = useState<Set<string>>(new Set());
+    const [chatOpen, setChatOpen] = useState(false);
 
     const toggleFlowRef = useCallback((nodeId: string) => {
         setExpandedFlowRefs(prev => {
@@ -143,6 +149,7 @@ export function FlowGraph({ rawNodes, rawEdges, mode = 'diff' }: {
 
     const flowCount = rawNodes.filter(n => n.type === 'flow' || n.type === 'sub-flow').length;
     const expandedCount = expandedFlowRefs.size;
+    const diffSummary = useMemo(() => buildAiDiffSummary(rawNodes, rawEdges), [rawNodes, rawEdges]);
 
     return (
         <div style={{ width: '100%', height: '500px', background: '#f6f8fa', borderBottom: '1px solid #d0d7de', display: 'flex', flexDirection: 'column' }}>
@@ -158,35 +165,62 @@ export function FlowGraph({ rawNodes, rawEdges, mode = 'diff' }: {
                         </button>
                     )}
                 </div>
-                <Legend />
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <button
+                        onClick={() => setChatOpen(prev => !prev)}
+                        style={{
+                            fontSize: 11,
+                            fontWeight: 700,
+                            color: '#0550ae',
+                            background: '#ddf4ff',
+                            border: '1px solid #54aeff',
+                            borderRadius: 999,
+                            padding: '4px 10px',
+                            cursor: 'pointer',
+                        }}
+                    >
+                        {chatOpen ? '✕ Close AI' : 'AI Chat'}
+                    </button>
+                    <Legend />
+                </div>
             </div>
             {/* Canvas */}
-            <div style={{ flex: 1 }}>
-                <ReactFlow
-                    nodes={rfNodes}
-                    edges={rfEdges}
-                    nodeTypes={nodeTypes}
-                    fitView
-                    fitViewOptions={{ padding: 0.15 }}
-                    attributionPosition="bottom-left"
-                    nodesDraggable={false}
-                >
-                    <Background color="#d0d7de" gap={20} />
-                    <Controls />
-                    <MiniMap
-                        nodeColor={n => {
-                            const t = (n.data as any)?.type || '';
-                            const st = (n.data as any)?.state || '';
-                            if (st === 'added') return '#2ea043';
-                            if (st === 'removed') return '#cf222e';
-                            if (st === 'modified') return '#d4a72c';
-                            if (t === 'flow') return '#388bfd';
-                            if (t === 'sub-flow') return '#8250df';
-                            return '#d0d7de';
-                        }}
-                        style={{ border: '1px solid #d0d7de' }}
+            <div style={{ flex: 1, display: 'flex', minHeight: 0 }}>
+                <div style={{ flex: 1 }}>
+                    <ReactFlow
+                        nodes={rfNodes}
+                        edges={rfEdges}
+                        nodeTypes={nodeTypes}
+                        fitView
+                        fitViewOptions={{ padding: 0.15 }}
+                        attributionPosition="bottom-left"
+                        nodesDraggable={false}
+                    >
+                        <Background color="#d0d7de" gap={20} />
+                        <Controls />
+                        <MiniMap
+                            nodeColor={n => {
+                                const t = (n.data as any)?.type || '';
+                                const st = (n.data as any)?.state || '';
+                                if (st === 'added') return '#2ea043';
+                                if (st === 'removed') return '#cf222e';
+                                if (st === 'modified') return '#d4a72c';
+                                if (t === 'flow') return '#388bfd';
+                                if (t === 'sub-flow') return '#8250df';
+                                return '#d0d7de';
+                            }}
+                            style={{ border: '1px solid #d0d7de' }}
+                        />
+                    </ReactFlow>
+                </div>
+                <div style={{ display: chatOpen ? 'flex' : 'none' }}>
+                    <AiChatPanel
+                        filePath={filePath}
+                        baseXml={baseXml}
+                        headXml={headXml}
+                        diffSummary={diffSummary}
                     />
-                </ReactFlow>
+                </div>
             </div>
         </div>
     );

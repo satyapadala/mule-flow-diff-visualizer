@@ -54,12 +54,58 @@ function safeParse(xmlStr: string) {
     }
 }
 
+function asStringRecord(value: unknown): Record<string, string> {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
+
+    return Object.fromEntries(
+        Object.entries(value).map(([key, entryValue]) => [key, String(entryValue)]),
+    );
+}
+
+function asTrimmedString(value: unknown): string {
+    return typeof value === 'string' ? value : '';
+}
+
+function splitTagParts(tag: string): { ns: string; local: string } {
+    if (!tag.includes(':')) return { ns: '', local: tag };
+    const [ns, ...rest] = tag.split(':');
+    return { ns, local: rest.length > 0 ? rest[rest.length - 1] : tag };
+}
+
+function extractTextContent(value: unknown): string {
+    if (typeof value === 'string') return value;
+    if (!value) return '';
+
+    if (Array.isArray(value)) {
+        return value
+            .map(item => extractTextContent(item))
+            .filter(Boolean)
+            .join('\n')
+            .trim();
+    }
+
+    if (typeof value === 'object') {
+        const record = value as Record<string, unknown>;
+
+        if (typeof record['#text'] === 'string') return record['#text'];
+        if (typeof record[' #text'] === 'string') return record[' #text'];
+
+        return Object.entries(record)
+            .filter(([key]) => key !== ':@')
+            .map(([, entryValue]) => extractTextContent(entryValue))
+            .filter(Boolean)
+            .join('\n')
+            .trim();
+    }
+
+    return '';
+}
+
 // ── Context Hints ────────────────────────────────────────────────────────────
 // Extracts meaningful display attributes per MuleSoft component type.
 function extractContextHints(tag: string, attrs: Record<string, string>, children: any[]): ContextHint[] {
     const hints: ContextHint[] = [];
-    const ns = tag.includes(':') ? tag.split(':')[0] : '';
-    const local = tag.includes(':') ? tag.split(':').pop()! : tag;
+    const { ns, local } = splitTagParts(tag);
     const a = attrs; // alias for brevity
 
     const add = (key: string, val: string | undefined | null) => {
@@ -148,9 +194,7 @@ function extractContextHints(tag: string, attrs: Record<string, string>, childre
                     if (tag === ':@' || tag === '#text') continue;
                     if (tag.includes('set-payload') || tag.includes('set-variable')) {
                         const content = item[tag];
-                        const text = Array.isArray(content)
-                            ? (content.find((c: any) => c['#text'])?.['#text'] || '')
-                            : (typeof content === 'string' ? content : '');
+                        const text = extractTextContent(content);
                         if (text) dwScripts.push(text);
                     } else if (Array.isArray(item[tag])) {
                         findDW(item[tag]);
@@ -161,9 +205,15 @@ function extractContextHints(tag: string, attrs: Record<string, string>, childre
         findDW(children);
 
         for (const script of dwScripts) {
+            const safeScript = asTrimmedString(script);
+            if (!safeScript) {
+                console.warn('[Parser] Skipping malformed DataWeave script', { tag, script });
+                continue;
+            }
+
             // Extract mappings after '---'
-            const body = script.split('---').pop() || '';
-            const outputTypeMatch = script.match(/output\s+([\w/]+)/);
+            const body = safeScript.split('---').pop() || '';
+            const outputTypeMatch = safeScript.match(/output\s+([\w/]+)/);
             if (outputTypeMatch) add('output', outputTypeMatch[1]);
 
             // Very sophisticated regex to find top-level 'key : value' mappings
@@ -287,7 +337,7 @@ export async function parseGraphDiff(req: DiffRequest): Promise<DiffResponse> {
         type Topology = 'sequential' | 'branching' | 'independent';
 
         function childTopology(tag: string): Topology {
-            const localName = tag.includes(':') ? tag.split(':').pop()! : tag;
+            const { local: localName } = splitTagParts(tag);
             if (SEQUENTIAL_CONTAINERS.has(tag) || SEQUENTIAL_CONTAINERS.has(localName)) return 'sequential';
             if (BRANCHING_CONTAINERS.has(tag) || BRANCHING_CONTAINERS.has(localName))  return 'branching';
             if (INDEPENDENT_CONTAINERS.has(tag) || INDEPENDENT_CONTAINERS.has(localName)) return 'independent';
@@ -311,7 +361,7 @@ export async function parseGraphDiff(req: DiffRequest): Promise<DiffResponse> {
                 const keys = Object.keys(item).filter(k => !SKIP_TAGS.has(k));
 
                 for (const tag of keys) {
-                    const attrs = item[':@'] || {};
+                    const attrs = asStringRecord(item[':@']);
                     const idAttr = attrs['@_doc:id'] || `${contextPath}/${tag}[${index}]`;
                     const nameAttr = attrs['@_name'] || attrs['@_doc:name'] || tag;
 

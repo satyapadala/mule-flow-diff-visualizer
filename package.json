@@ -10,17 +10,19 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "dagre": "^0.8.5",
+    "fast-xml-parser": "^4.3.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "react-markdown": "^10.1.0",
     "reactflow": "^11.10.4",
-    "fast-xml-parser": "^4.3.2",
-    "dagre": "^0.8.5"
+    "remark-gfm": "^4.0.1"
   },
   "devDependencies": {
-    "@types/react": "^19.0.0",
-    "@types/react-dom": "^19.0.0",
     "@types/chrome": "^0.0.263",
     "@types/dagre": "^0.7.52",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
     "@typescript-eslint/eslint-plugin": "^7.1.0",
     "@typescript-eslint/parser": "^7.1.0",
     "@vitejs/plugin-react": "^4.2.1",

@@ -62,6 +62,12 @@ function detectContext(url: string): PageContext {
 const pageInfoEl = document.getElementById('page-info')!;
 const btnVisualize = document.getElementById('btn-visualize') as HTMLButtonElement;
 const btnDocs = document.getElementById('btn-open-docs') as HTMLButtonElement;
+const btnAiSettings = document.getElementById('btn-ai-settings') as HTMLButtonElement;
+
+btnAiSettings.addEventListener('click', () => {
+  chrome.runtime.openOptionsPage();
+  window.close();
+});
 
 chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
   if (!tab?.url) {
