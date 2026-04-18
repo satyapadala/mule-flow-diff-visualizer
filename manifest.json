@@ -2,14 +2,13 @@
   "manifest_version": 3,
   "name": "MuleFlow Diff Visualizer",
   "version": "0.1.0",
-  "description": "Visualize MuleSoft XML flows on GitHub PRs and Sourcegraph",
+  "description": "Visualize MuleSoft XML flows on GitHub pull requests",
   "permissions": [
     "webNavigation",
     "storage"
   ],
   "host_permissions": [
-    "https://github.com/*",
-    "https://*/*"
+    "https://github.com/*"
   ],
   "background": {
     "service_worker": "background.js",
@@ -18,8 +17,7 @@
   "content_scripts": [
     {
       "matches": [
-        "https://github.com/*",
-        "https://*/*"
+        "https://github.com/*"
       ],
       "js": [
         "content.js"
@@ -33,8 +31,7 @@
         "assets/*"
       ],
       "matches": [
-        "https://github.com/*",
-        "https://*/*"
+        "https://github.com/*"
       ]
     }
   ],

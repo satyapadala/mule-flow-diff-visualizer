@@ -1,6 +1,6 @@
 # MuleFlow Diff Visualizer
 
-Chrome extension for reviewing MuleSoft XML changes on GitHub pull requests and direct XML file views.
+Chrome extension for reviewing MuleSoft XML changes on GitHub pull requests and direct XML file views on `github.com`.
 
 It turns Mule XML into a visual flow graph, highlights changed nodes, and now includes an AI reviewer chat that can answer questions using:
 - old XML
@@ -15,7 +15,7 @@ It turns Mule XML into a visual flow graph, highlights changed nodes, and now in
 - Supports `flow-ref` expansion in the visual graph
 - Includes an AI chat panel inside the visual flow view
 - Lets users configure their own LLM endpoint, model, API key, and system prompt
-- Supports direct XML viewing from GitHub and Sourcegraph
+- Supports direct XML viewing from GitHub
 
 ## AI Reviewer
 
