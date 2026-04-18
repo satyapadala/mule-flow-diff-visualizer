@@ -18,6 +18,7 @@ function debounce<T extends (...args: any[]) => void>(func: T, wait: number) {
   };
 }
 
+// ── GitHub PR injection (unchanged) ──────────────────────────────────────────
 function injectVisualToggle() {
     // Guard: Only run on GitHub PR diff pages (works for github.com AND GitHub Enterprise)
     if (!window.location.pathname.includes('/pull/')) return;
@@ -82,7 +83,6 @@ function injectVisualToggle() {
               let headXml = '';
 
               try {
-                  // Attempt to cleanly fetch the 100% complete files via git raw endpoints
                   const result = await fetchCompleteXmlFiles(window.location.href, pathText);
                   baseXml = result.baseXml;
                   headXml = result.headXml;
@@ -98,7 +98,6 @@ function injectVisualToggle() {
               
               toggleButton.textContent = '⏳ Parsing Configs...';
 
-              // Parse synchronously directly in the content script (fast enough for XML parsing, bypasses Github CSP limits on blob workers)
               parseGraphDiff({
                   baseXml,
                   headXml,
@@ -170,4 +169,3 @@ chrome.runtime.onMessage.addListener((msg) => {
     setTimeout(debouncedInject, 2000);
   }
 });
-

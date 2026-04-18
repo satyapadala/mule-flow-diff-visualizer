@@ -1,17 +1,26 @@
 chrome.webNavigation.onHistoryStateUpdated.addListener((details) => {
-  // Only send messages to GitHub PR pages
-  if (details.url.includes('github.com') && details.url.includes('/pull/')) {
-    // Small delay to allow the content script to re-initialize on the new SPA state
+  const url = details.url;
+
+  // GitHub PR pages
+  if (url.includes('/pull/')) {
     setTimeout(() => {
       chrome.tabs.sendMessage(details.tabId, {
         type: 'GITHUB_NAVIGATION',
-        url: details.url,
-      }).catch((err) => {
-        // Ignore "Could not establish connection" errors. 
-        // This happens if the content script hasn't loaded yet on a specific tab.
-        // The content script's own MutationObserver will handle the injection anyway.
-        // console.debug('MuleFlow: Navigation message suppressed (no receiver yet).');
-      });
+        url,
+      }).catch(() => {});
+    }, 1000);
+    return;
+  }
+
+  // Sourcegraph blob views (SPA navigation)
+  const hostname = new URL(url).hostname;
+  const isSG = hostname.includes('sourcegraph') || hostname.startsWith('sg.');
+  if (isSG && url.includes('/-/blob/')) {
+    setTimeout(() => {
+      chrome.tabs.sendMessage(details.tabId, {
+        type: 'SG_NAVIGATION',
+        url,
+      }).catch(() => {});
     }, 1000);
   }
 });

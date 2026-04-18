@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "MuleFlow Diff Visualizer",
   "version": "0.1.0",
-  "description": "Visualize MuleSoft XML diffs on GitHub PRs",
+  "description": "Visualize MuleSoft XML flows on GitHub PRs and Sourcegraph",
   "permissions": [
     "webNavigation",
     "storage"
@@ -33,7 +33,8 @@
         "assets/*"
       ],
       "matches": [
-        "https://github.com/*"
+        "https://github.com/*",
+        "https://*/*"
       ]
     }
   ],

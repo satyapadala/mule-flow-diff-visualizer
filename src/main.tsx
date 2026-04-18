@@ -192,10 +192,11 @@ type Status = 'idle' | 'loading' | 'done' | 'error';
 
 const App = () => {
   const params   = new URLSearchParams(window.location.search);
-  const host     = params.get('host') || 'github.com';
+  const platform = params.get('platform') || 'github';
+  const host     = params.get('host') || params.get('sgHost') || 'github.com';
   const owner    = params.get('owner') || '';
-  const repo     = params.get('repo') || '';
-  const gitRef   = params.get('ref') || 'main';
+  const repo     = params.get('repo') || params.get('repo') || '';
+  const gitRef   = params.get('ref') || params.get('revision') || 'main';
   const filePath = params.get('filePath') || '';
 
   const [status, setStatus]         = useState<Status>(filePath ? 'loading' : 'idle');
@@ -233,10 +234,19 @@ const App = () => {
     (async () => {
       try {
         setStatus('loading');
-        const rawUrl = `https://${host}/${owner}/${repo}/raw/${gitRef}/${filePath}`;
-        const res = await fetch(rawUrl, { redirect: 'follow' });
-        if (!res.ok) throw new Error(`Failed to fetch: ${res.statusText}`);
-        const xml = await res.text();
+        let xml = '';
+        if (platform === 'sourcegraph') {
+           const revPart = gitRef && gitRef !== 'main' ? `@${gitRef}` : '';
+           const rawUrl = `https://${host}/${repo}${revPart}/-/raw/${filePath}`;
+           const res = await fetch(rawUrl, { redirect: 'follow', credentials: 'include' });
+           if (!res.ok) throw new Error(`Sourcegraph fetch failed: ${res.statusText}`);
+           xml = await res.text();
+        } else {
+           const rawUrl = `https://${host}/${owner}/${repo}/raw/${gitRef}/${filePath}`;
+           const res = await fetch(rawUrl, { redirect: 'follow' });
+           if (!res.ok) throw new Error(`GitHub fetch failed: ${res.statusText}`);
+           xml = await res.text();
+        }
 
         const result = await parseGraphDiff({ baseXml: xml, headXml: xml, filePath });
         if (result.error) throw new Error(result.error);
@@ -264,12 +274,15 @@ const App = () => {
         <span style={{ fontSize: 24 }}>🌊</span>
         <div>
           <div style={{ fontWeight: 800, fontSize: 16, letterSpacing: '-0.3px' }}>MuleFlow Visualizer</div>
-          <div style={{ fontSize: 11, opacity: 0.8 }}>{owner}/{repo}</div>
+          <div style={{ fontSize: 11, opacity: 0.8 }}>{platform === 'sourcegraph' ? repo : `${owner}/${repo}`}</div>
         </div>
         {filePath && (
-          <a href={`https://${host}/${owner}/${repo}/blob/${gitRef}/${filePath}`} target="_blank" rel="noreferrer"
+          <a href={platform === 'sourcegraph' 
+              ? `https://${host}/${repo}${gitRef && gitRef !== 'main' ? '@' + gitRef : ''}/-/blob/${filePath}`
+              : `https://${host}/${owner}/${repo}/blob/${gitRef}/${filePath}`} 
+            target="_blank" rel="noreferrer"
             style={{ marginLeft: 'auto', color: 'rgba(255,255,255,0.85)', fontSize: 12, textDecoration: 'none', background: 'rgba(255,255,255,0.15)', padding: '4px 12px', borderRadius: 6, border: '1px solid rgba(255,255,255,0.25)' }}>
-            View on GitHub ↗
+            View on {platform === 'sourcegraph' ? 'Sourcegraph' : 'GitHub'} ↗
           </a>
         )}
       </div>

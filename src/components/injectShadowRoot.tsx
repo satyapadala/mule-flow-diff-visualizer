@@ -27,9 +27,9 @@ export function injectShadowRootAndRender(
         // Or append to file header.
         
         // Find the diff container that holds the table
-        const tableContainer = parentElement.querySelector('.border.position-relative.rounded-bottom-2');
-        if (tableContainer) {
-             parentElement.insertBefore(container, tableContainer);
+        const tableContainer = parentElement.querySelector('.border.position-relative.rounded-bottom-2, .js-file-content');
+        if (tableContainer && tableContainer.parentNode) {
+             tableContainer.parentNode.insertBefore(container, tableContainer);
         } else {
              parentElement.appendChild(container);
         }
